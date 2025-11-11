@@ -13,9 +13,10 @@ A modern, real-time stock monitoring application for the Brazilian Stock Exchang
 - 🌓 **Dark/Light Theme** - Seamless theme switching with system preference support
 - 🔍 **Smart Search** - Quick stock search with autocomplete for popular B3 stocks
 - 📱 **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
-- 💾 **Persistent Storage** - Your stock list is saved locally in your browser
-- 🎯 **Drag & Drop** - Reorder stocks manually with intuitive drag and drop
+- 💾 **Smart Storage** - Stock list saved locally; prices always fetched fresh from API
+- 🎯 **Drag & Drop** - Reorder stocks manually with smooth drag and drop animations
 - 🔀 **Flexible Sorting** - Sort by price, change percentage, or symbol (A-Z/Z-A)
+- ⚡ **No Stale Data** - Prices are always up-to-date, never cached
 - 📋 **Stock Details** - View detailed information including:
   - Current price and change percentage
   - Market cap, volume, and P/E ratio
@@ -142,6 +143,16 @@ The token is stored locally in your browser and is only used for API requests to
 5. **Sort Stocks**: Use the "Ordenar" button to sort by price, change, or symbol
 6. **Save Changes**: Click "Salvar Lista" to persist your stock list and order
 7. **Toggle Theme**: Use the theme toggle button to switch between light and dark modes
+
+### 💡 How Data Storage Works
+
+- **Stock List**: Only stock symbols and names are saved in localStorage
+- **Prices**: Always fetched fresh from the API (never cached)
+- **Page Load**: Automatically fetches current prices for all saved stocks
+- **Auto-refresh**: Keeps prices updated at your chosen interval
+- **Historical Data**: Chart data is cached temporarily for better performance
+
+This ensures you always see up-to-date market prices without stale cached data!
 
 ## 📝 Available Scripts
 

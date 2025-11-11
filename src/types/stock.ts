@@ -1,7 +1,12 @@
-export interface Stock {
+// Metadados salvos no localStorage (sem preços)
+export interface SavedStock {
   id: string;
   symbol: string;
   name: string;
+}
+
+// Stock completo com preços (em memória, sempre buscado da API)
+export interface Stock extends SavedStock {
   price: number;
   change: number;
   changePercent: number;
