@@ -1,73 +1,176 @@
-# Welcome to your Lovable project
+# B3 Stock Tracker
 
-## Project info
+A modern, real-time stock monitoring application for the Brazilian Stock Exchange (B3). Track your favorite stocks with live price updates, interactive charts, and a beautiful dark/light theme interface.
 
-**URL**: https://lovable.dev/projects/9e674f45-4ae3-4cff-8516-767239dac6d0
+![B3 Stock Tracker](https://img.shields.io/badge/React-18.3-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue) ![Vite](https://img.shields.io/badge/Vite-5.4-purple)
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+- 📊 **Real-time Stock Monitoring** - Track multiple B3 stocks with live price updates
+- 🔄 **Auto-refresh** - Automatic price updates with configurable intervals and countdown timer
+- 📈 **Interactive Charts** - Historical price charts with multiple time ranges (1w, 1mo, 3mo, 6mo, 1y, 5y)
+- 🎨 **Beautiful UI** - Modern interface built with shadcn/ui components and Tailwind CSS
+- 🌓 **Dark/Light Theme** - Seamless theme switching with system preference support
+- 🔍 **Smart Search** - Quick stock search with autocomplete for popular B3 stocks
+- 📱 **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
+- 💾 **Persistent Storage** - Your stock list is saved locally in your browser
+- 🎯 **Drag & Drop** - Reorder stocks manually with intuitive drag and drop
+- 🔀 **Flexible Sorting** - Sort by price, change percentage, or symbol (A-Z/Z-A)
+- 📋 **Stock Details** - View detailed information including:
+  - Current price and change percentage
+  - Market cap, volume, and P/E ratio
+  - 52-week high/low ranges
+  - Daily price ranges
+  - Company logos
 
-**Use Lovable**
+## 🚀 Technologies
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9e674f45-4ae3-4cff-8516-767239dac6d0) and start prompting.
+This project is built with modern web technologies:
 
-Changes made via Lovable will be committed automatically to this repo.
+- **[React](https://react.dev/)** (18.3) - UI framework
+- **[TypeScript](https://www.typescriptlang.org/)** (5.8) - Type-safe JavaScript
+- **[Vite](https://vitejs.dev/)** (5.4) - Fast build tool and dev server
+- **[Tailwind CSS](https://tailwindcss.com/)** (3.4) - Utility-first CSS framework
+- **[shadcn/ui](https://ui.shadcn.com/)** - High-quality React components
+- **[Recharts](https://recharts.org/)** (2.15) - Composable charting library
+- **[TanStack Query](https://tanstack.com/query)** (5.83) - Data fetching and caching
+- **[React Router](https://reactrouter.com/)** (6.30) - Client-side routing
+- **[@dnd-kit](https://dndkit.com/)** - Drag and drop functionality
+- **[React Hook Form](https://react-hook-form.com/)** + **[Zod](https://zod.dev/)** - Form validation
+- **[Sonner](https://sonner.emilkowal.ski/)** - Toast notifications
+- **[Lucide React](https://lucide.dev/)** - Beautiful icons
 
-**Use your preferred IDE**
+## 📦 Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Clone the repository:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+git clone https://github.com/yourusername/b3-tracker.git
+cd b3-tracker
+```
 
-Follow these steps:
+Install dependencies using your preferred package manager:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+**Using npm:**
+```bash
+npm install
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+**Using yarn:**
+```bash
+yarn install
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+**Using bun:**
+```bash
+bun install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## 🏃 Running the Project
+
+Start the development server:
+
+**Using npm:**
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+**Using yarn:**
+```bash
+yarn dev
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+**Using bun:**
+```bash
+bun run dev
+```
 
-**Use GitHub Codespaces**
+The application will be available at `http://localhost:5173` (or another port if 5173 is in use).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔨 Build for Production
 
-## What technologies are used for this project?
+Build the application:
 
-This project is built with:
+**Using npm:**
+```bash
+npm run build
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+**Using yarn:**
+```bash
+yarn build
+```
 
-## How can I deploy this project?
+**Using bun:**
+```bash
+bun run build
+```
 
-Simply open [Lovable](https://lovable.dev/projects/9e674f45-4ae3-4cff-8516-767239dac6d0) and click on Share -> Publish.
+Preview the production build:
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+npm run preview
+# or
+yarn preview
+# or
+bun run preview
+```
 
-Yes, you can!
+## ⚙️ Configuration
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### API Token (Optional)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+The application fetches stock data from two sources:
+
+1. **Yahoo Finance** (default) - Free, no token required
+2. **brapi.dev** - Fallback option, optional token for higher rate limits
+
+To configure a brapi.dev API token:
+
+1. Get your free token at [brapi.dev](https://brapi.dev/)
+2. Click the "⚙️ Configurar Token" button in the app
+3. Enter your token and save
+
+The token is stored locally in your browser and is only used for API requests to brapi.dev.
+
+## 🎯 Usage
+
+1. **Add Stocks**: Click the "+ Adicionar Ação" button and search for B3 stocks (e.g., PETR4, VALE3, ITUB4)
+2. **View Details**: Click on any stock card to view detailed information and historical charts
+3. **Update Prices**: Click "Atualizar Preços" to manually refresh or enable "Auto-atualização" for automatic updates
+4. **Reorder Stocks**: Drag and drop stock cards to reorder them manually
+5. **Sort Stocks**: Use the "Ordenar" button to sort by price, change, or symbol
+6. **Save Changes**: Click "Salvar Lista" to persist your stock list and order
+7. **Toggle Theme**: Use the theme toggle button to switch between light and dark modes
+
+## 📝 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build in development mode
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## 🌐 API Sources
+
+The application uses multiple data sources for reliability:
+
+- **Primary**: Yahoo Finance API (free, no authentication required)
+- **Fallback**: brapi.dev API (Brazilian financial data aggregator)
+- **Logos**: Fetched from brapi.dev when available
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+
+## 📧 Support
+
+If you have any questions or need help, please open an issue on GitHub.
+
+---
+
+Made with ❤️ for Brazilian stock investors
