@@ -36,13 +36,17 @@ export const popularStocks = [
 
 const BRAPI_BASE_URL = "https://brapi.dev/api";
 
-// Yahoo Finance tem rate limiting agressivo, então usamos brapi.dev como padrão
-// Para habilitar Yahoo, mude USE_YAHOO_FINANCE para true
+// Yahoo Finance com proxy CORS (sempre usa corsproxy.io)
 const USE_YAHOO_FINANCE = true;
+const YAHOO_BASE_URL = "https://query1.finance.yahoo.com/v8/finance/chart";
 
-const YAHOO_BASE_URL = import.meta.env.DEV
-  ? "/api/yahoo/v8/finance/chart"  // Proxy local do Vite
-  : "https://query1.finance.yahoo.com/v8/finance/chart";
+// Proxy CORS público (usado sempre)
+const CORS_PROXY = "https://corsproxy.io/?";
+
+// Função auxiliar para adicionar proxy CORS
+function getProxiedUrl(url: string): string {
+  return `${CORS_PROXY}${encodeURIComponent(url)}`;
+}
 
 // Obtém o token da localStorage ou usa vazio para ações de teste
 function getApiToken(): string {
@@ -77,8 +81,9 @@ async function fetchLogoFromBrapi(symbol: string): Promise<string | undefined> {
 async function fetchFromYahoo(symbol: string): Promise<StockApiResponse> {
   const yahooSymbol = toYahooSymbol(symbol);
   const url = `${YAHOO_BASE_URL}/${yahooSymbol}?interval=1d&range=1d`;
+  const proxiedUrl = getProxiedUrl(url);
 
-  const response = await fetch(url);
+  const response = await fetch(proxiedUrl);
 
   if (!response.ok) {
     throw new Error(`Yahoo Finance error: ${response.status}`);
@@ -170,25 +175,26 @@ async function fetchFromBrapi(symbol: string): Promise<StockApiResponse> {
   return data.results[0];
 }
 
-// Função principal: usa brapi.dev por padrão (mais confiável para B3)
+// Função principal: tenta Yahoo Finance primeiro (mais rápido), fallback para brapi.dev
+// Usa corsproxy.io para contornar CORS do Yahoo Finance
 export async function fetchStockData(symbol: string): Promise<StockApiResponse> {
-  // Se Yahoo Finance estiver habilitado, tenta primeiro
+  // Tenta Yahoo Finance primeiro via CORS proxy
   if (USE_YAHOO_FINANCE) {
     try {
-      console.log(`Buscando ${symbol} do Yahoo Finance...`);
+      console.log(`Buscando ${symbol} do Yahoo Finance via CORS proxy...`);
       return await fetchFromYahoo(symbol);
     } catch (yahooError) {
       console.warn("Yahoo Finance falhou, tentando brapi.dev...", yahooError);
     }
   }
 
-  // Usa brapi.dev (fonte padrão e confiável)
+  // Fallback: usa brapi.dev
   try {
     console.log(`Buscando ${symbol} do brapi.dev...`);
     return await fetchFromBrapi(symbol);
   } catch (brapiError) {
     console.error("Erro ao buscar dados:", brapiError);
-    throw new Error("Não foi possível buscar dados da ação. Tente novamente.");
+    throw new Error("Não foi possível buscar dados da ação. Verifique o símbolo ou configure um token da brapi.dev.");
   }
 }
 
@@ -261,8 +267,9 @@ async function fetchHistoricalFromYahoo(
   const yahooSymbol = toYahooSymbol(symbol);
   const yahooRange = yahooRangeMap[range];
   const url = `${YAHOO_BASE_URL}/${yahooSymbol}?interval=1d&range=${yahooRange}`;
+  const proxiedUrl = getProxiedUrl(url);
 
-  const response = await fetch(url);
+  const response = await fetch(proxiedUrl);
 
   if (!response.ok) {
     throw new Error(`Yahoo Finance error: ${response.status}`);

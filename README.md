@@ -231,8 +231,13 @@ To use a custom domain:
 The application uses multiple data sources for reliability:
 
 - **Primary**: Yahoo Finance API (free, no authentication required)
+  - Uses [corsproxy.io](https://corsproxy.io) public CORS proxy
 - **Fallback**: brapi.dev API (Brazilian financial data aggregator)
 - **Logos**: Fetched from brapi.dev when available
+
+### Why CORS Proxy?
+
+Yahoo Finance doesn't allow direct browser requests due to CORS restrictions. We use corsproxy.io, a free public CORS proxy service, to make requests to Yahoo Finance API. The brapi.dev API has CORS enabled by default and doesn't require a proxy.
 
 ## 📄 License
 
