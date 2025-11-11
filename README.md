@@ -160,24 +160,36 @@ This project is configured for automatic deployment using GitHub Actions. Every 
 
 **Setup Steps:**
 
-1. **Push your code to GitHub:**
+1. **FIRST: Enable GitHub Pages in your repository (IMPORTANT!)**
+   - Go to your repository on GitHub
+   - Click on **Settings** → **Pages** (left sidebar)
+   - Under **Source**, select **GitHub Actions** from the dropdown
+   - Click **Save** if prompted
+   - This MUST be done before pushing the code, or you'll get a "Not Found" error
+
+2. **Push your code to GitHub:**
    ```bash
    git add .
    git commit -m "Configure GitHub Pages deployment"
    git push origin main
    ```
 
-2. **Enable GitHub Pages in your repository:**
-   - Go to your repository on GitHub
-   - Click on **Settings** → **Pages**
-   - Under **Source**, select **GitHub Actions**
-
 3. **Wait for the deployment:**
    - Go to the **Actions** tab in your repository
    - You'll see the "Deploy to GitHub Pages" workflow running
-   - Once complete, your site will be live at: `https://yourusername.github.io/b3-tracker/`
+   - Once complete (green checkmark ✓), your site will be live at: `https://yourusername.github.io/b3-tracker/`
+   - First deployment takes about 1-2 minutes
 
-4. **Update the base path (if needed):**
+4. **If you get "Not Found" error:**
+   - Make sure you completed step 1 (Enable GitHub Pages)
+   - Go to **Settings** → **Actions** → **General**
+   - Scroll to **Workflow permissions**
+   - Select **Read and write permissions**
+   - Check **Allow GitHub Actions to create and approve pull requests**
+   - Click **Save**
+   - Re-run the workflow in the Actions tab
+
+5. **Update the base path (if needed):**
    - If your repository name is different from `b3-tracker`, update the `base` in `vite.config.ts`:
    ```typescript
    base: mode === 'production' ? '/your-repo-name/' : '/',
