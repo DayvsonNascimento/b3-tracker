@@ -27,11 +27,18 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: stock.id });
+  } = useSortable({
+    id: stock.id,
+    transition: {
+      duration: 250,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    },
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.3 : 1,
   };
 
   const price = stock.price ?? 0;
@@ -82,8 +89,9 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "p-4 hover:shadow-lg transition-all duration-200",
-        isDragging && "opacity-50 shadow-xl",
+        "p-4 transition-all duration-200",
+        "hover:shadow-lg hover:scale-[1.01]",
+        isDragging && "ring-2 ring-primary ring-offset-2 shadow-2xl cursor-grabbing scale-105 z-50",
         isExpanded && "shadow-xl"
       )}
     >
@@ -102,10 +110,18 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing mt-1"
+          className={cn(
+            "cursor-grab active:cursor-grabbing mt-1",
+            "hover:bg-accent hover:text-accent-foreground rounded-md p-1 -m-1",
+            "transition-all duration-150 hover:scale-110",
+            "touch-none" // Previne scroll em dispositivos touch
+          )}
           onClick={(e) => e.stopPropagation()}
         >
-          <GripVertical className="h-5 w-5 text-muted-foreground" />
+          <GripVertical className={cn(
+            "h-5 w-5 transition-colors",
+            isDragging ? "text-primary" : "text-muted-foreground"
+          )} />
         </div>
 
         {stock.logoUrl && (

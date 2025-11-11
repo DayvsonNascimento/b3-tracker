@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { fetchStockData } from "@/services/stockApi";
 import { toast } from "sonner";
-import { Save, RefreshCw, TrendingUp, Pause, Play, ArrowUpDown } from "lucide-react";
+import { Save, RefreshCw, Pause, Play, ArrowUpDown } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -17,6 +17,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -32,6 +34,7 @@ const Index = () => {
   const [savedStocks, setSavedStocks] = useLocalStorage<Stock[]>("monitored-stocks", []);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   // Auto-refresh states
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useLocalStorage("auto-refresh-enabled", true);
@@ -42,7 +45,11 @@ const Index = () => {
   const [sortOption, setSortOption] = useLocalStorage<SortOption>("sort-option", "default");
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Requer mover 8px antes de ativar o drag (evita cliques acidentais)
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -117,6 +124,10 @@ const Index = () => {
     }
   }, [stocks, refreshInterval]);
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -129,6 +140,8 @@ const Index = () => {
         return newOrder;
       });
     }
+
+    setActiveId(null);
   };
 
   const toggleAutoRefresh = () => {
@@ -181,7 +194,11 @@ const Index = () => {
         <header className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 text-primary" />
+              <img
+                src="/assets/logo.png"
+                alt="B3 Tracker Logo"
+                className="h-10 w-10 object-contain"
+              />
               <h1 className="text-4xl font-bold text-foreground">Monitor de Ações B3</h1>
             </div>
             <div className="flex items-center gap-3">
@@ -260,8 +277,12 @@ const Index = () => {
 
         {stocks.length === 0 ? (
           <div className="text-center py-16">
-            <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-muted mb-4">
-              <TrendingUp className="h-10 w-10 text-muted-foreground" />
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-muted mb-4 p-4">
+              <img
+                src="/assets/logo.png"
+                alt="B3 Tracker Logo"
+                className="w-full h-full object-contain opacity-70"
+              />
             </div>
             <h2 className="text-2xl font-semibold text-foreground mb-2">
               Nenhuma ação monitorada
@@ -275,6 +296,7 @@ const Index = () => {
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
             <SortableContext items={stocks} strategy={verticalListSortingStrategy}>
@@ -284,6 +306,20 @@ const Index = () => {
                 ))}
               </div>
             </SortableContext>
+
+            <DragOverlay dropAnimation={{
+              duration: 250,
+              easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+            }}>
+              {activeId ? (
+                <div className="opacity-80 rotate-2 scale-105">
+                  <StockCard
+                    stock={stocks.find((s) => s.id === activeId)!}
+                    onRemove={() => {}}
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>
           </DndContext>
         )}
       </div>
