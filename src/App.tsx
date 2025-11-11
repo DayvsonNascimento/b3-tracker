@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Base path para GitHub Pages (produção) ou '/' para desenvolvimento
+// Base path for GitHub Pages (production) or '/' for development
 const basename = import.meta.env.MODE === 'production' ? '/b3-tracker' : '';
 
 const App = () => (

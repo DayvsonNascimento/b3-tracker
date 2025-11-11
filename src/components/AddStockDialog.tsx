@@ -25,6 +25,7 @@ export function AddStockDialog({ onAdd }: AddStockDialogProps) {
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ symbol: string; name: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [processingSymbol, setProcessingSymbol] = useState<string | null>(null);
 
   useEffect(() => {
     if (symbol.trim().length > 0) {
@@ -37,6 +38,17 @@ export function AddStockDialog({ onAdd }: AddStockDialogProps) {
     }
   }, [symbol]);
 
+  // Clean up states when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setSymbol("");
+      setLoading(false);
+      setProcessingSymbol(null);
+      setShowSuggestions(false);
+      setSuggestions([]);
+    }
+  }, [open]);
+
   const handleSubmit = async (stockSymbol?: string) => {
     const targetSymbol = stockSymbol || symbol;
 
@@ -45,8 +57,14 @@ export function AddStockDialog({ onAdd }: AddStockDialogProps) {
       return;
     }
 
+    // Prevent duplicate submissions
+    if (loading || processingSymbol) {
+      return;
+    }
+
     setLoading(true);
     setShowSuggestions(false);
+    setProcessingSymbol(targetSymbol.toUpperCase());
 
     try {
       const data = await fetchStockData(targetSymbol.trim().toUpperCase());
@@ -66,10 +84,16 @@ export function AddStockDialog({ onAdd }: AddStockDialogProps) {
       toast.error("Erro ao buscar ação. Verifique o código e tente novamente.");
     } finally {
       setLoading(false);
+      setProcessingSymbol(null);
     }
   };
 
   const handleSelectSuggestion = (selectedSymbol: string) => {
+    // Prevent duplicate clicks
+    if (loading || processingSymbol) {
+      return;
+    }
+
     setSymbol(selectedSymbol);
     setShowSuggestions(false);
     handleSubmit(selectedSymbol);
@@ -108,18 +132,29 @@ export function AddStockDialog({ onAdd }: AddStockDialogProps) {
                   <Command className="rounded-lg border shadow-md bg-popover">
                     <CommandList>
                       <CommandGroup>
-                        {suggestions.slice(0, 8).map((stock) => (
-                          <CommandItem
-                            key={stock.symbol}
-                            onSelect={() => handleSelectSuggestion(stock.symbol)}
-                            className="cursor-pointer"
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-semibold">{stock.symbol}</span>
-                              <span className="text-sm text-muted-foreground">{stock.name}</span>
-                            </div>
-                          </CommandItem>
-                        ))}
+                        {suggestions.slice(0, 8).map((stock) => {
+                          const isProcessing = processingSymbol === stock.symbol;
+                          const isAnyProcessing = loading || !!processingSymbol;
+
+                          return (
+                            <CommandItem
+                              key={stock.symbol}
+                              onSelect={() => handleSelectSuggestion(stock.symbol)}
+                              className={`cursor-pointer ${isAnyProcessing ? 'opacity-50 pointer-events-none' : ''}`}
+                              disabled={isAnyProcessing}
+                            >
+                              <div className="flex flex-col flex-1">
+                                <span className="font-semibold">
+                                  {stock.symbol}
+                                  {isProcessing && (
+                                    <Loader2 className="ml-2 h-3 w-3 inline animate-spin" />
+                                  )}
+                                </span>
+                                <span className="text-sm text-muted-foreground">{stock.name}</span>
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
                       </CommandGroup>
                     </CommandList>
                   </Command>
@@ -127,11 +162,11 @@ export function AddStockDialog({ onAdd }: AddStockDialogProps) {
               )}
             </div>
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
+          <Button type="submit" className="w-full" disabled={loading || !!processingSymbol}>
+            {loading || processingSymbol ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Buscando...
+                {processingSymbol ? `Adicionando ${processingSymbol}...` : 'Buscando...'}
               </>
             ) : (
               "Adicionar"

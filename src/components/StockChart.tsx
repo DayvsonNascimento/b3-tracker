@@ -30,7 +30,7 @@ export function StockChart({
   timeRange = "1mo",
   onTimeRangeChange,
 }: StockChartProps) {
-  // Calcula variação percentual do período para exibição
+  // Calculate period percentage change for display
   const getPeriodChangeInfo = () => {
     if (!data || data.length < 2) return null;
 
@@ -111,26 +111,26 @@ export function StockChart({
 
 function renderChart(data: HistoricalDataPoint[], periodVariation: "positive" | "negative" | "neutral") {
 
-  // Formata data para exibição (DD/MM)
+  // Format date for display (DD/MM)
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
   };
 
-  // Formata valor para moeda
+  // Format value as currency
   const formatCurrency = (value: number) => {
     return `R$ ${value.toFixed(2)}`;
   };
 
-  // Cores baseadas na variação do período
+  // Colors based on period variation
   const getChartColor = () => {
     switch (periodVariation) {
       case "positive":
-        return "#10b981"; // Verde
+        return "#10b981"; // Green
       case "negative":
-        return "#ef4444"; // Vermelho
+        return "#ef4444"; // Red
       case "neutral":
-        return "#6b7280"; // Cinza
+        return "#6b7280"; // Gray
       default:
         return "#6b7280";
     }

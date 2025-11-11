@@ -48,7 +48,7 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
 
   const handleToggleExpand = async () => {
     if (!isExpanded && historicalData.length === 0) {
-      // Busca dados históricos ao expandir pela primeira vez
+      // Fetch historical data when expanding for the first time
       await loadHistoricalData(timeRange);
     }
     setIsExpanded(!isExpanded);
@@ -72,7 +72,7 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
     loadHistoricalData(range);
   };
 
-  // Calcula variação do período (primeiro vs último preço)
+  // Calculate period variation (first vs last price)
   const getPeriodVariation = (): "positive" | "negative" | "neutral" => {
     if (historicalData.length < 2) return "neutral";
 
@@ -80,7 +80,7 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
     const lastPrice = historicalData[historicalData.length - 1].close;
     const change = lastPrice - firstPrice;
 
-    if (Math.abs(change) < 0.01) return "neutral"; // Variação insignificante
+    if (Math.abs(change) < 0.01) return "neutral"; // Insignificant variation
     return change > 0 ? "positive" : "negative";
   };
 

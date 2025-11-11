@@ -64,7 +64,7 @@ const Index = () => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Requer mover 8px antes de ativar o drag (evita cliques acidentais)
+        distance: 8, // Requires moving 8px before activating drag (prevents accidental clicks)
       },
     }),
     useSensor(KeyboardSensor, {
@@ -72,7 +72,7 @@ const Index = () => {
     })
   );
 
-  // Carrega ações salvas e busca preços da API ao montar
+  // Load saved stocks and fetch prices from API on mount
   useEffect(() => {
     const loadStocksWithPrices = async () => {
       if (savedStocks.length === 0) {
@@ -98,8 +98,8 @@ const Index = () => {
                 logoUrl: data.logourl,
               };
             } catch (error) {
-              console.error(`Erro ao carregar ${savedStock.symbol}:`, error);
-              // Retorna com valores padrão se falhar
+              console.error(`Error loading ${savedStock.symbol}:`, error);
+              // Return with default values if it fails
               return {
                 ...savedStock,
                 price: 0,
@@ -113,7 +113,7 @@ const Index = () => {
         );
         setStocks(stocksWithPrices);
       } catch (error) {
-        console.error('Erro ao carregar ações:', error);
+        console.error('Error loading stocks:', error);
       } finally {
         setIsInitialLoading(false);
       }
@@ -151,7 +151,7 @@ const Index = () => {
   };
 
   const saveStocks = () => {
-    // Salva apenas metadados (sem preços)
+    // Save only metadata (without prices)
     const stocksMetadata: SavedStock[] = stocks.map((stock) => ({
       id: stock.id,
       symbol: stock.symbol,

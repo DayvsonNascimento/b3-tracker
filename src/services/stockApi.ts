@@ -1,6 +1,6 @@
 import { StockApiResponse } from "@/types/stock";
 
-// Lista de ações populares da B3 para autocomplete
+// List of popular B3 stocks for autocomplete
 export const popularStocks = [
   { symbol: "PETR4", name: "Petrobras PN" },
   { symbol: "PETR3", name: "Petrobras ON" },
@@ -36,29 +36,29 @@ export const popularStocks = [
 
 const BRAPI_BASE_URL = "https://brapi.dev/api";
 
-// Yahoo Finance com proxy CORS (sempre usa corsproxy.io)
+// Yahoo Finance with CORS proxy (always uses corsproxy.io)
 const USE_YAHOO_FINANCE = true;
 const YAHOO_BASE_URL = "https://query1.finance.yahoo.com/v8/finance/chart";
 
-// Proxy CORS público (usado sempre)
+// Public CORS proxy (always used)
 const CORS_PROXY = "https://corsproxy.io/?";
 
-// Função auxiliar para adicionar proxy CORS
+// Helper function to add CORS proxy
 function getProxiedUrl(url: string): string {
   return `${CORS_PROXY}${encodeURIComponent(url)}`;
 }
 
-// Obtém o token da localStorage ou usa vazio para ações de teste
+// Get token from localStorage or use empty for test stocks
 function getApiToken(): string {
   return localStorage.getItem("brapi_token") || "";
 }
 
-// Converte símbolo B3 para formato Yahoo Finance (PETR4 -> PETR4.SA)
+// Convert B3 symbol to Yahoo Finance format (PETR4 -> PETR4.SA)
 function toYahooSymbol(symbol: string): string {
   return `${symbol}.SA`;
 }
 
-// Busca logo da brapi.dev (mantém logos mesmo usando Yahoo)
+// Fetch logo from brapi.dev (keeps logos even when using Yahoo)
 async function fetchLogoFromBrapi(symbol: string): Promise<string | undefined> {
   try {
     const token = getApiToken();
@@ -72,12 +72,12 @@ async function fetchLogoFromBrapi(symbol: string): Promise<string | undefined> {
     const data = await response.json();
     return data.results?.[0]?.logourl;
   } catch (error) {
-    console.warn("Não foi possível buscar logo da brapi:", error);
+    console.warn("Could not fetch logo from brapi:", error);
     return undefined;
   }
 }
 
-// Busca dados do Yahoo Finance
+// Fetch data from Yahoo Finance
 async function fetchFromYahoo(symbol: string): Promise<StockApiResponse> {
   const yahooSymbol = toYahooSymbol(symbol);
   const url = `${YAHOO_BASE_URL}/${yahooSymbol}?interval=1d&range=1d`;
@@ -100,20 +100,20 @@ async function fetchFromYahoo(symbol: string): Promise<StockApiResponse> {
   const quote = result.indicators?.quote?.[0];
 
   if (!meta || !quote) {
-    throw new Error("Formato de dados inválido do Yahoo Finance");
+    throw new Error("Invalid data format from Yahoo Finance");
   }
 
-  // Calcula variação
+  // Calculate change
   const currentPrice = meta.regularMarketPrice || 0;
   const previousClose = meta.previousClose || meta.chartPreviousClose || 0;
   const change = currentPrice - previousClose;
 
-  // Busca logo da brapi (assíncrono, não bloqueia)
+  // Fetch logo from brapi (async, non-blocking)
   const logoPromise = fetchLogoFromBrapi(symbol);
 
-  // Mapeia para o formato StockApiResponse
+  // Map to StockApiResponse format
   const stockData: StockApiResponse = {
-    symbol: symbol, // Usa símbolo B3 sem .SA
+    symbol: symbol, // Use B3 symbol without .SA
     shortName: meta.symbol || symbol,
     longName: meta.longName || meta.shortName || symbol,
     currency: meta.currency || "BRL",
@@ -131,12 +131,12 @@ async function fetchFromYahoo(symbol: string): Promise<StockApiResponse> {
     fiftyTwoWeekHigh: meta.fiftyTwoWeekHigh || 0,
     fiftyTwoWeekRange: `${meta.fiftyTwoWeekLow || 0} - ${meta.fiftyTwoWeekHigh || 0}`,
     marketCap: meta.marketCap || 0,
-    logourl: "", // Será preenchido depois
-    priceEarnings: 0, // Yahoo não fornece no endpoint básico
+    logourl: "", // Will be filled later
+    priceEarnings: 0, // Yahoo doesn't provide this in basic endpoint
     earningsPerShare: 0,
   };
 
-  // Aguarda logo (com timeout)
+  // Wait for logo (with timeout)
   try {
     const logo = await Promise.race([
       logoPromise,
@@ -144,13 +144,13 @@ async function fetchFromYahoo(symbol: string): Promise<StockApiResponse> {
     ]);
     if (logo) stockData.logourl = logo;
   } catch (error) {
-    console.warn("Timeout ao buscar logo");
+    console.warn("Timeout fetching logo");
   }
 
   return stockData;
 }
 
-// Fallback para brapi.dev
+// Fallback to brapi.dev
 async function fetchFromBrapi(symbol: string): Promise<StockApiResponse> {
   const token = getApiToken();
   const url = token
@@ -175,26 +175,26 @@ async function fetchFromBrapi(symbol: string): Promise<StockApiResponse> {
   return data.results[0];
 }
 
-// Função principal: tenta Yahoo Finance primeiro (mais rápido), fallback para brapi.dev
-// Usa corsproxy.io para contornar CORS do Yahoo Finance
+// Main function: tries Yahoo Finance first (faster), fallback to brapi.dev
+// Uses corsproxy.io to bypass Yahoo Finance CORS
 export async function fetchStockData(symbol: string): Promise<StockApiResponse> {
-  // Tenta Yahoo Finance primeiro via CORS proxy
+  // Try Yahoo Finance first via CORS proxy
   if (USE_YAHOO_FINANCE) {
     try {
-      console.log(`Buscando ${symbol} do Yahoo Finance via CORS proxy...`);
+      console.log(`Fetching ${symbol} from Yahoo Finance via CORS proxy...`);
       return await fetchFromYahoo(symbol);
     } catch (yahooError) {
-      console.warn("Yahoo Finance falhou, tentando brapi.dev...", yahooError);
+      console.warn("Yahoo Finance failed, trying brapi.dev...", yahooError);
     }
   }
 
-  // Fallback: usa brapi.dev
+  // Fallback: use brapi.dev
   try {
-    console.log(`Buscando ${symbol} do brapi.dev...`);
+    console.log(`Fetching ${symbol} from brapi.dev...`);
     return await fetchFromBrapi(symbol);
   } catch (brapiError) {
-    console.error("Erro ao buscar dados:", brapiError);
-    throw new Error("Não foi possível buscar dados da ação. Verifique o símbolo ou configure um token da brapi.dev.");
+    console.error("Error fetching data:", brapiError);
+    throw new Error("Could not fetch stock data. Check the symbol or configure a brapi.dev token.");
   }
 }
 
@@ -209,7 +209,7 @@ export function searchStocks(query: string): Array<{ symbol: string; name: strin
   );
 }
 
-// Interface para dados históricos
+// Interface for historical data
 export interface HistoricalDataPoint {
   date: string;
   close: number;
@@ -219,10 +219,10 @@ export interface HistoricalDataPoint {
   volume: number;
 }
 
-// Tipos de ranges disponíveis
+// Available time range types
 export type TimeRange = "1w" | "1mo" | "3mo" | "6mo" | "1y" | "5y";
 
-// Mapeamento de ranges para Yahoo Finance
+// Range mapping for Yahoo Finance
 const yahooRangeMap: Record<TimeRange, string> = {
   "1w": "7d",
   "1mo": "1mo",
@@ -232,9 +232,9 @@ const yahooRangeMap: Record<TimeRange, string> = {
   "5y": "5y",
 };
 
-// Mapeamento de ranges para brapi.dev
+// Range mapping for brapi.dev
 const brapiRangeMap: Record<TimeRange, string> = {
-  "1w": "1d", // brapi não tem 7d, usa 1d e limita resultado
+  "1w": "1d", // brapi doesn't have 7d, uses 1d and limits result
   "1mo": "1mo",
   "3mo": "3mo",
   "6mo": "6mo",
@@ -242,7 +242,7 @@ const brapiRangeMap: Record<TimeRange, string> = {
   "5y": "5y",
 };
 
-// Busca dados históricos com range configurável
+// Fetch historical data with configurable range
 export async function fetchHistoricalData(
   symbol: string,
   range: TimeRange = "1mo"
@@ -251,15 +251,15 @@ export async function fetchHistoricalData(
     try {
       return await fetchHistoricalFromYahoo(symbol, range);
     } catch (error) {
-      console.warn("Yahoo histórico falhou, tentando brapi...", error);
+      console.warn("Yahoo historical failed, trying brapi...", error);
     }
   }
 
-  // Fallback para brapi.dev
+  // Fallback to brapi.dev
   return await fetchHistoricalFromBrapi(symbol, range);
 }
 
-// Busca dados históricos do Yahoo Finance
+// Fetch historical data from Yahoo Finance
 async function fetchHistoricalFromYahoo(
   symbol: string,
   range: TimeRange = "1mo"
@@ -298,17 +298,17 @@ async function fetchHistoricalFromYahoo(
     volume: quote.volume?.[index] || 0,
   }));
 
-  return historicalData.filter(d => d.close > 0); // Remove dados inválidos
+  return historicalData.filter(d => d.close > 0); // Remove invalid data
 }
 
-// Busca dados históricos do brapi.dev
+// Fetch historical data from brapi.dev
 async function fetchHistoricalFromBrapi(
   symbol: string,
   timeRange: TimeRange = "1mo"
 ): Promise<HistoricalDataPoint[]> {
   const token = getApiToken();
   const range = brapiRangeMap[timeRange];
-  const interval = "1d"; // Diário
+  const interval = "1d"; // Daily
 
   const url = token
     ? `${BRAPI_BASE_URL}/quote/${symbol}?range=${range}&interval=${interval}&token=${token}`

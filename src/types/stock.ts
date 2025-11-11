@@ -1,11 +1,11 @@
-// Metadados salvos no localStorage (sem preços)
+// Metadata saved in localStorage (without prices)
 export interface SavedStock {
   id: string;
   symbol: string;
   name: string;
 }
 
-// Stock completo com preços (em memória, sempre buscado da API)
+// Complete stock with prices (in memory, always fetched from API)
 export interface Stock extends SavedStock {
   price: number;
   change: number;
