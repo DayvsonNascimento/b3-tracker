@@ -26,7 +26,10 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
     transition,
   };
 
-  const isPositive = stock.change >= 0;
+  const price = stock.price ?? 0;
+  const change = stock.change ?? 0;
+  const changePercent = stock.changePercent ?? 0;
+  const isPositive = change >= 0;
 
   return (
     <Card
@@ -65,7 +68,7 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
           <div className="flex items-end justify-between gap-2">
             <div>
               <p className="text-2xl font-bold text-foreground">
-                R$ {stock.price.toFixed(2)}
+                R$ {price.toFixed(2)}
               </p>
               <p className="text-xs text-muted-foreground">
                 Atualizado: {new Date(stock.updatedAt).toLocaleTimeString("pt-BR")}
@@ -80,7 +83,7 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
                 )}
               >
                 {isPositive ? "+" : ""}
-                {stock.changePercent.toFixed(2)}%
+                {changePercent.toFixed(2)}%
               </p>
               <p
                 className={cn(
@@ -88,7 +91,7 @@ export function StockCard({ stock, onRemove }: StockCardProps) {
                   isPositive ? "text-chart-positive" : "text-chart-negative"
                 )}
               >
-                {isPositive ? "+" : ""}R$ {stock.change.toFixed(2)}
+                {isPositive ? "+" : ""}R$ {change.toFixed(2)}
               </p>
             </div>
           </div>
