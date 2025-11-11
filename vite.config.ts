@@ -5,6 +5,11 @@ import { componentTagger } from 'lovable-tagger';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // GitHub Pages usa o nome do repo como base
+  // Para repo "b3-tracker" a URL será: https://username.github.io/b3-tracker/
+  // Se o repo for username.github.io, deixe base: '/'
+  base: mode === 'production' ? '/b3-tracker/' : '/',
+
   server: {
     port: 3000,
     proxy: {

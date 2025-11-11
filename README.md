@@ -150,6 +150,69 @@ The token is stored locally in your browser and is only used for API requests to
 - `npm run build:dev` - Build in development mode
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
+- `npm run deploy` - Deploy to GitHub Pages (manual method)
+
+## 🚀 Deploy to GitHub Pages
+
+### Method 1: Automatic Deploy with GitHub Actions (Recommended)
+
+This project is configured for automatic deployment using GitHub Actions. Every push to the `main` branch will automatically build and deploy to GitHub Pages.
+
+**Setup Steps:**
+
+1. **Push your code to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Configure GitHub Pages deployment"
+   git push origin main
+   ```
+
+2. **Enable GitHub Pages in your repository:**
+   - Go to your repository on GitHub
+   - Click on **Settings** → **Pages**
+   - Under **Source**, select **GitHub Actions**
+
+3. **Wait for the deployment:**
+   - Go to the **Actions** tab in your repository
+   - You'll see the "Deploy to GitHub Pages" workflow running
+   - Once complete, your site will be live at: `https://yourusername.github.io/b3-tracker/`
+
+4. **Update the base path (if needed):**
+   - If your repository name is different from `b3-tracker`, update the `base` in `vite.config.ts`:
+   ```typescript
+   base: mode === 'production' ? '/your-repo-name/' : '/',
+   ```
+   - If using a custom domain or `username.github.io` repository, use `base: '/'`
+
+### Method 2: Manual Deploy
+
+If you prefer to deploy manually:
+
+1. **Install gh-pages:**
+   ```bash
+   npm install -D gh-pages
+   ```
+
+2. **Deploy:**
+   ```bash
+   npm run deploy
+   ```
+
+3. **Configure GitHub Pages:**
+   - Go to repository **Settings** → **Pages**
+   - Under **Source**, select **Deploy from a branch**
+   - Select the `gh-pages` branch
+
+Your site will be available at `https://yourusername.github.io/b3-tracker/`
+
+### Custom Domain
+
+To use a custom domain:
+
+1. Add a `CNAME` file in the `public` folder with your domain
+2. Configure your DNS records to point to GitHub Pages
+3. Update `base: '/'` in `vite.config.ts`
+4. Enable custom domain in repository Settings → Pages
 
 ## 🌐 API Sources
 
