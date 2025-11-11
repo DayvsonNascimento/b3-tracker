@@ -195,7 +195,7 @@ const Index = () => {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <img
-                src="/assets/logo.png"
+                src={`${import.meta.env.BASE_URL}assets/logo.png`}
                 alt="B3 Tracker Logo"
                 className="h-10 w-10 object-contain"
               />
@@ -279,7 +279,7 @@ const Index = () => {
           <div className="text-center py-16">
             <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-muted mb-4 p-4">
               <img
-                src="/assets/logo.png"
+                src={`${import.meta.env.BASE_URL}assets/logo.png`}
                 alt="B3 Tracker Logo"
                 className="w-full h-full object-contain opacity-70"
               />
