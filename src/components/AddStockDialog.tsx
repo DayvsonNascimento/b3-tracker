@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 
 interface AddStockDialogProps {
-  onAdd: (symbol: string, name: string, price: number, change: number) => void;
+  onAdd: (symbol: string, name: string, price: number, change: number, logoUrl?: string) => void;
 }
 
 export function AddStockDialog({ onAdd }: AddStockDialogProps) {
@@ -39,7 +39,7 @@ export function AddStockDialog({ onAdd }: AddStockDialogProps) {
 
   const handleSubmit = async (stockSymbol?: string) => {
     const targetSymbol = stockSymbol || symbol;
-    
+
     if (!targetSymbol.trim()) {
       toast.error("Digite um código de ação");
       return;
@@ -50,15 +50,16 @@ export function AddStockDialog({ onAdd }: AddStockDialogProps) {
 
     try {
       const data = await fetchStockData(targetSymbol.trim().toUpperCase());
-      
+
       onAdd(
-        data.stock,
-        data.name,
-        data.close,
-        data.change
+        data.symbol,
+        data.shortName || data.longName,
+        data.regularMarketPrice,
+        data.regularMarketChange,
+        data.logourl
       );
 
-      toast.success(`Ação ${data.stock} adicionada com sucesso!`);
+      toast.success(`Ação ${data.symbol} adicionada com sucesso!`);
       setSymbol("");
       setOpen(false);
     } catch (error) {

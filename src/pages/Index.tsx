@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Stock } from "@/types/stock";
 import { StockCard } from "@/components/StockCard";
 import { AddStockDialog } from "@/components/AddStockDialog";
 import { ApiTokenDialog } from "@/components/ApiTokenDialog";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { fetchStockData } from "@/services/stockApi";
 import { toast } from "sonner";
-import { Save, RefreshCw, TrendingUp } from "lucide-react";
+import { Save, RefreshCw, TrendingUp, Pause, Play, ArrowUpDown } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -24,11 +25,21 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
+type SortOption = "default" | "price-asc" | "price-desc" | "change-asc" | "change-desc" | "symbol-asc" | "symbol-desc";
+
 const Index = () => {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [savedStocks, setSavedStocks] = useLocalStorage<Stock[]>("monitored-stocks", []);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Auto-refresh states
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useLocalStorage("auto-refresh-enabled", true);
+  const [refreshInterval] = useLocalStorage("refresh-interval", 60); // seconds
+  const [countdown, setCountdown] = useState(refreshInterval);
+
+  // Sorting state
+  const [sortOption, setSortOption] = useLocalStorage<SortOption>("sort-option", "default");
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -41,7 +52,7 @@ const Index = () => {
     setStocks(savedStocks);
   }, []);
 
-  const addStock = (symbol: string, name: string, price: number, change: number) => {
+  const addStock = (symbol: string, name: string, price: number, change: number, logoUrl?: string) => {
     const newStock: Stock = {
       id: `${symbol}-${Date.now()}`,
       symbol,
@@ -50,6 +61,7 @@ const Index = () => {
       change,
       changePercent: (change / (price - change)) * 100,
       updatedAt: new Date().toISOString(),
+      logoUrl,
     };
 
     setStocks((prev) => [...prev, newStock]);
@@ -67,9 +79,9 @@ const Index = () => {
     toast.success("Lista de ações salva com sucesso!");
   };
 
-  const refreshPrices = async () => {
+  const refreshPrices = useCallback(async (silent = false) => {
     if (stocks.length === 0) {
-      toast.info("Adicione ações para atualizar os preços");
+      if (!silent) toast.info("Adicione ações para atualizar os preços");
       return;
     }
 
@@ -82,10 +94,11 @@ const Index = () => {
             const data = await fetchStockData(stock.symbol);
             return {
               ...stock,
-              price: data.close,
-              change: data.change,
-              changePercent: (data.change / (data.close - data.change)) * 100,
+              price: data.regularMarketPrice,
+              change: data.regularMarketChange,
+              changePercent: (data.regularMarketChange / (data.regularMarketPrice - data.regularMarketChange)) * 100,
               updatedAt: new Date().toISOString(),
+              logoUrl: data.logourl,
             };
           } catch (error) {
             console.error(`Erro ao atualizar ${stock.symbol}:`, error);
@@ -95,13 +108,14 @@ const Index = () => {
       );
 
       setStocks(updatedStocks);
-      toast.success("Preços atualizados!");
+      if (!silent) toast.success("Preços atualizados!");
     } catch (error) {
-      toast.error("Erro ao atualizar preços");
+      if (!silent) toast.error("Erro ao atualizar preços");
     } finally {
       setIsRefreshing(false);
+      setCountdown(refreshInterval); // Reset countdown after refresh
     }
-  };
+  }, [stocks, refreshInterval]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -117,6 +131,50 @@ const Index = () => {
     }
   };
 
+  const toggleAutoRefresh = () => {
+    setAutoRefreshEnabled(!autoRefreshEnabled);
+    setCountdown(refreshInterval);
+    toast.info(autoRefreshEnabled ? "Auto-atualização desativada" : "Auto-atualização ativada");
+  };
+
+  const getSortedStocks = (): Stock[] => {
+    const stocksCopy = [...stocks];
+
+    switch (sortOption) {
+      case "price-asc":
+        return stocksCopy.sort((a, b) => a.price - b.price);
+      case "price-desc":
+        return stocksCopy.sort((a, b) => b.price - a.price);
+      case "change-asc":
+        return stocksCopy.sort((a, b) => a.changePercent - b.changePercent);
+      case "change-desc":
+        return stocksCopy.sort((a, b) => b.changePercent - a.changePercent);
+      case "symbol-asc":
+        return stocksCopy.sort((a, b) => a.symbol.localeCompare(b.symbol));
+      case "symbol-desc":
+        return stocksCopy.sort((a, b) => b.symbol.localeCompare(a.symbol));
+      default:
+        return stocksCopy; // default/manual order
+    }
+  };
+
+  // Auto-refresh countdown effect
+  useEffect(() => {
+    if (!autoRefreshEnabled || stocks.length === 0 || isRefreshing) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          refreshPrices(true); // silent refresh
+          return refreshInterval;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [autoRefreshEnabled, stocks.length, isRefreshing, refreshInterval, refreshPrices]);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -126,7 +184,10 @@ const Index = () => {
               <TrendingUp className="h-8 w-8 text-primary" />
               <h1 className="text-4xl font-bold text-foreground">Monitor de Ações B3</h1>
             </div>
-            <ApiTokenDialog />
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <ApiTokenDialog />
+            </div>
           </div>
           <p className="text-muted-foreground">
             Monitore os preços das suas ações favoritas da Bolsa de Valores
@@ -137,13 +198,52 @@ const Index = () => {
           <AddStockDialog onAdd={addStock} />
           <Button
             variant="outline"
-            onClick={refreshPrices}
+            onClick={() => refreshPrices(false)}
             disabled={isRefreshing || stocks.length === 0}
             className="gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Atualizar Preços
           </Button>
+          <Button
+            variant={autoRefreshEnabled ? "default" : "outline"}
+            onClick={toggleAutoRefresh}
+            disabled={stocks.length === 0}
+            className="gap-2"
+          >
+            {autoRefreshEnabled ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            Auto-atualização
+            {autoRefreshEnabled && stocks.length > 0 && (
+              <span className="ml-1 text-xs opacity-75">({countdown}s)</span>
+            )}
+          </Button>
+          <div className="relative">
+            <Button
+              variant="outline"
+              onClick={() => {
+                const options: SortOption[] = ["default", "price-desc", "price-asc", "change-desc", "change-asc", "symbol-asc", "symbol-desc"];
+                const currentIndex = options.indexOf(sortOption);
+                const nextOption = options[(currentIndex + 1) % options.length];
+                setSortOption(nextOption);
+
+                const labels: Record<SortOption, string> = {
+                  "default": "Ordem manual",
+                  "price-desc": "Maior preço",
+                  "price-asc": "Menor preço",
+                  "change-desc": "Maior alta",
+                  "change-asc": "Maior baixa",
+                  "symbol-asc": "Símbolo A-Z",
+                  "symbol-desc": "Símbolo Z-A"
+                };
+                toast.info(`Ordenação: ${labels[nextOption]}`);
+              }}
+              disabled={stocks.length === 0}
+              className="gap-2"
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              Ordenar
+            </Button>
+          </div>
           <Button
             variant={hasUnsavedChanges ? "default" : "outline"}
             onClick={saveStocks}
@@ -179,7 +279,7 @@ const Index = () => {
           >
             <SortableContext items={stocks} strategy={verticalListSortingStrategy}>
               <div className="grid gap-4">
-                {stocks.map((stock) => (
+                {getSortedStocks().map((stock) => (
                   <StockCard key={stock.id} stock={stock} onRemove={removeStock} />
                 ))}
               </div>
