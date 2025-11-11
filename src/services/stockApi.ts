@@ -34,44 +34,36 @@ export const popularStocks = [
   { symbol: "SANB11", name: "Santander UNT" },
 ];
 
-// Usando Yahoo Finance API (gratuita)
+const API_BASE_URL = "https://brapi.dev/api";
+
+// Obtém o token da localStorage ou usa vazio para ações de teste
+function getApiToken(): string {
+  return localStorage.getItem("brapi_token") || "";
+}
+
 export async function fetchStockData(symbol: string): Promise<StockApiResponse> {
   try {
-    // Yahoo Finance requer .SA para ações brasileiras
-    const yahooSymbol = symbol.includes('.SA') ? symbol : `${symbol}.SA`;
+    const token = getApiToken();
+    const url = token 
+      ? `${API_BASE_URL}/quote/${symbol}?token=${token}`
+      : `${API_BASE_URL}/quote/${symbol}`;
     
-    const response = await fetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=1d&range=1d`
-    );
+    const response = await fetch(url);
     
     if (!response.ok) {
-      throw new Error(`Ação não encontrada: ${symbol}`);
+      if (response.status === 401) {
+        throw new Error("Token inválido ou expirado. Configure seu token da brapi.dev");
+      }
+      throw new Error(`Erro ao buscar dados: ${response.status}`);
     }
     
     const data = await response.json();
     
-    if (!data.chart?.result?.[0]) {
+    if (!data.results || data.results.length === 0) {
       throw new Error("Ação não encontrada");
     }
     
-    const result = data.chart.result[0];
-    const quote = result.meta;
-    const indicators = result.indicators.quote[0];
-    
-    const currentPrice = quote.regularMarketPrice || indicators.close[indicators.close.length - 1];
-    const previousClose = quote.previousClose || quote.chartPreviousClose;
-    const change = currentPrice - previousClose;
-    
-    return {
-      stock: symbol,
-      name: quote.longName || quote.shortName || symbol,
-      close: currentPrice,
-      change: change,
-      volume: quote.regularMarketVolume || 0,
-      market_cap: quote.marketCap || 0,
-      logo: "",
-      sector: "",
-    };
+    return data.results[0];
   } catch (error) {
     console.error("Erro na API:", error);
     throw error;

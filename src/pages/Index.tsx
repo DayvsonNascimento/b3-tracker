@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Stock } from "@/types/stock";
 import { StockCard } from "@/components/StockCard";
 import { AddStockDialog } from "@/components/AddStockDialog";
+import { ApiTokenDialog } from "@/components/ApiTokenDialog";
 import { Button } from "@/components/ui/button";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { fetchStockData } from "@/services/stockApi";
@@ -120,9 +121,12 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <header className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <TrendingUp className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl font-bold text-foreground">Monitor de Ações B3</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="h-8 w-8 text-primary" />
+              <h1 className="text-4xl font-bold text-foreground">Monitor de Ações B3</h1>
+            </div>
+            <ApiTokenDialog />
           </div>
           <p className="text-muted-foreground">
             Monitore os preços das suas ações favoritas da Bolsa de Valores
